@@ -1,24 +1,22 @@
 <template>
-  <mo-drag-select
-    class="task-list"
-    v-if="taskList.length > 0"
-    attribute="attr"
-    @change="handleDragSelectChange"
-  >
-    <div
-      v-for="item in taskList"
-      :key="item.gid"
-      :attr="item.gid"
-      :class="getItemClass(item)"
-    >
-      <mo-task-item
-        :task="item"
-      />
+  <div class="task-list-container">
+    <div class="task-list" v-if="taskList.length > 0">
+      <div
+        v-for="item in taskList"
+        :key="item.gid"
+        :class="getItemClass(item)"
+      >
+        <mo-task-item
+          :task="item"
+          :is-selected="selectedList.includes(item.gid)"
+          @select="handleSelect"
+        />
+      </div>
     </div>
-  </mo-drag-select>
-  <div class="no-task" v-else>
-    <div class="no-task-inner">
-      {{ $t('task.no-task') }}
+    <div class="no-task" v-else>
+      <div class="no-task-inner">
+        {{ $t('task.no-task') }}
+      </div>
     </div>
   </div>
 </template>
@@ -26,13 +24,11 @@
 <script>
   import { mapState } from 'vuex'
   import { cloneDeep } from 'lodash'
-  import DragSelect from '@/components/DragSelect/Index'
   import TaskItem from './TaskItem'
 
   export default {
     name: 'mo-task-list',
     components: {
-      [DragSelect.name]: DragSelect,
       [TaskItem.name]: TaskItem
     },
     data () {
@@ -48,9 +44,17 @@
       })
     },
     methods: {
-      handleDragSelectChange (selectedList) {
-        this.selectedList = selectedList
-        this.$store.dispatch('task/selectTasks', cloneDeep(selectedList))
+      handleSelect (gid, selected) {
+        let newSelectedList = [...this.selectedList]
+        if (selected) {
+          if (!newSelectedList.includes(gid)) {
+            newSelectedList.push(gid)
+          }
+        } else {
+          newSelectedList = newSelectedList.filter(id => id !== gid)
+        }
+        this.selectedList = newSelectedList
+        this.$store.dispatch('task/selectTasks', cloneDeep(newSelectedList))
       },
       getItemClass (item) {
         const isSelected = this.selectedList.includes(item.gid)
@@ -68,11 +72,20 @@
 </script>
 
 <style lang="scss">
+.task-list-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .task-list {
-  padding: 16px 16px 64px;
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
   min-height: 100%;
   box-sizing: border-box;
 }
+
 .no-task {
   display: flex;
   height: 100%;
@@ -83,6 +96,7 @@
   color: #555;
   user-select: none;
 }
+
 .no-task-inner {
   width: 100%;
   padding-top: 360px;

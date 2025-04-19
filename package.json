@@ -18,6 +18,7 @@
     "release": "npm run build --publish onTagOrDraft",
     "build": "node .electron-vue/build.js && electron-builder",
     "build:applesilicon": "node .electron-vue/build.js && electron-builder --arm64 --mac",
+    "build:win": "node .electron-vue/build.js && electron-builder --win --x64",
     "build:github": "node .electron-vue/build.js",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",

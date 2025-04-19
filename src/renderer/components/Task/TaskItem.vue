@@ -1,5 +1,10 @@
 <template>
   <div :key="task.gid" class="task-item" v-on:dblclick="onDbClick">
+    <el-checkbox
+      class="task-checkbox"
+      v-model="isChecked"
+      @change="handleCheckboxChange"
+    />
     <div class="task-name" :title="taskFullName">
       <span>{{ taskFullName }}</span>
     </div>
@@ -33,6 +38,15 @@
     props: {
       task: {
         type: Object
+      },
+      isSelected: {
+        type: Boolean,
+        default: false
+      }
+    },
+    data () {
+      return {
+        isChecked: this.isSelected
       }
     },
     computed: {
@@ -59,7 +73,15 @@
         }
       }
     },
+    watch: {
+      isSelected (newVal) {
+        this.isChecked = newVal
+      }
+    },
     methods: {
+      handleCheckboxChange (val) {
+        this.$emit('select', this.task.gid, val)
+      },
       onDbClick () {
         const { status } = this.task
         const { COMPLETE, WAITING, PAUSED } = TASK_STATUS
@@ -89,38 +111,57 @@
 .task-item {
   position: relative;
   min-height: 78px;
-  padding: 16px 12px;
+  padding: 16px;
   background-color: $--task-item-background;
   border: 1px solid $--task-item-border-color;
   border-radius: 6px;
-  margin-bottom: 16px;
-  transition: $--border-transition-base;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: flex-start;
   &:hover {
     border-color: $--task-item-hover-border-color;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  }
+  .task-checkbox {
+    margin-right: 16px;
+    margin-top: 4px;
   }
   .task-item-actions {
     position: absolute;
     top: 16px;
-    right: 12px;
+    right: 16px;
   }
 }
+
 .selected .task-item {
-  border-color: $--task-item-hover-border-color;
+  border-color: $--color-primary;
+  background-color: rgba($--color-primary, 0.05);
 }
+
 .task-name {
-  color: #505753;
-  margin-bottom: 1.5rem;
+  color: $--color-text-primary;
+  margin-bottom: 1rem;
   margin-right: 200px;
   word-break: break-all;
   min-height: 26px;
+  flex: 1;
+  margin-left: 8px;
   &> span {
     font-size: 14px;
     line-height: 26px;
-    overflow : hidden;
+    overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
   }
+}
+
+.task-progress {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
 }
 </style>

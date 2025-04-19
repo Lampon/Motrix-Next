@@ -17,13 +17,27 @@
         class="panel-header"
         height="84"
       >
+      <div style="display: flex;">
         <h4 class="task-title hidden-xs-only">{{ title }}</h4>
+        <div class="task-select-header" v-if="taskList.length > 0">
+          <el-checkbox
+            v-model="isAllSelected"
+            @change="handleSelectAll"
+            class="select-all-checkbox"
+          >
+            {{ $t('task.select-all') }}
+          </el-checkbox>
+          <span class="selected-count" v-if="selectedGidListCount > 0">
+            <span style="margin: 0 4px;">{{selectedGidListCount}}</span>{{ $t('task.selected-count')}}
+          </span>
+        </div>
         <mo-subnav-switcher
           :title="title"
           :subnavs="subnavs"
           class="hidden-sm-and-up"
         />
         <mo-task-actions />
+      </div>
       </el-header>
       <el-main class="panel-content">
         <mo-task-list />
@@ -66,6 +80,11 @@
         default: 'active'
       }
     },
+    data () {
+      return {
+        isAllSelected: false
+      }
+    },
     computed: {
       ...mapState('task', {
         taskList: state => state.taskList,
@@ -100,7 +119,15 @@
       }
     },
     watch: {
-      status: 'onStatusChange'
+      status: 'onStatusChange',
+      selectedGidList (newVal) {
+        this.isAllSelected = this.taskList.length > 0 &&
+          newVal.length === this.taskList.length
+      },
+      taskList () {
+        this.isAllSelected = this.taskList.length > 0 &&
+          this.selectedGidList.length === this.taskList.length
+      }
     },
     methods: {
       onStatusChange () {
@@ -378,6 +405,14 @@
       handleShowTaskInfo (payload) {
         const { task } = payload
         this.$store.dispatch('task/showTaskDetail', task)
+      },
+      handleSelectAll (value) {
+        if (value) {
+          const gids = this.taskList.map(task => task.gid)
+          this.$store.dispatch('task/selectTasks', gids)
+        } else {
+          this.$store.dispatch('task/selectTasks', [])
+        }
       }
     },
     created () {
@@ -409,3 +444,24 @@
     }
   }
 </script>
+
+<style lang="scss">
+.main {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.task-select-header {
+  display: flex;
+  align-items: center;
+  margin-left: 16px;
+  .select-all-checkbox {
+    margin-right: 16px;
+  }
+  .selected-count {
+    font-size: 14px;
+    color: $--color-text-secondary;
+  }
+}
+</style>
